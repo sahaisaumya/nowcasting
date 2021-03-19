@@ -27,6 +27,7 @@ def plot_day_trend(date, main_df):
 	plt.gca().yaxis.set_major_locator(MaxNLocator(nbins=6))
 	plt.ylim(-100, None)
 	plt.grid(b=False)
+	plt.title(r'D = '+date, size=9)
 	sns.despine()
 
 def plot_total_case_hist(agg_pred_data):
