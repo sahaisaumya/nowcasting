@@ -1,15 +1,16 @@
-import pandas as pd
+import datetime
+import warnings
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score
+import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import seaborn as sns
+
+from sklearn.metrics import r2_score
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import MaxNLocator
-import datetime
-import warnings 
+from sklearn.ensemble import RandomForestRegressor
+
 warnings.filterwarnings('ignore')
 
 def datetime_str(date):
