@@ -13,14 +13,14 @@ from sklearn.ensemble import RandomForestRegressor
 
 warnings.filterwarnings('ignore')
 
-def datetime_str(date):
-	return f'{date.value.year}-{date.value.month:02d}-{date.value.day:02d}'
-
 def plot_day_trend(date, main_df):
+	'''
+	Routine to plot figure 2 in the paper.
+	'''
 	plt.figure(figsize=(5,3), dpi = 150, edgecolor='b')
 	plt.plot(main_df[date], marker='.', color="indianred", markersize=6, lw=0.5)
-	plt.xlabel(r"$t$", fontsize=12,)
-	plt.ylabel(r"$I_{tD}$", fontsize = 12,)
+	plt.xlabel(r"$T$", fontsize=12,)
+	plt.ylabel(r"$I_{TD}$", fontsize = 12,)
 	plt.xticks(rotation=0, fontsize=8)
 	plt.yticks(rotation=0, fontsize=8)
 	plt.gca().xaxis.set_major_locator(MaxNLocator(nbins=6))
@@ -32,6 +32,9 @@ def plot_day_trend(date, main_df):
 	sns.despine()
 
 def plot_total_case_hist(agg_pred_data):
+	'''
+	Routine to plot figure 1 in the paper.
+	'''
 	plt.figure(figsize = (10,4))
 	start = mdates.date2num(agg_pred_data.index[-15])
 	end = mdates.date2num(agg_pred_data.index[-1])
@@ -48,6 +51,9 @@ def plot_total_case_hist(agg_pred_data):
 	sns.despine(bottom=False)
 
 def plot_actual_predicted(y_train, pred):
+	'''
+	Routine to plot figure 3 in the paper.
+	'''
 	plt.figure(figsize=(5,3), dpi = 175)
 	plt.scatter(y_train, pred, alpha=0.8, color = "teal", s=4)
 	plt.xlabel('Actual '+r'$F_{td}$')
@@ -60,6 +66,9 @@ def plot_actual_predicted(y_train, pred):
 	sns.despine()
 
 def days_since_vs_missingness(pred, y_train, subset_df_p, days_to_plot = 14):
+	'''
+	Routine to plot figure 4 in the paper.
+	'''
 	fig = plt.figure(figsize=(6,2), dpi = 150)
 	err = np.sqrt(sum((pred - y_train)**2) / (len(y_train) - 2))
 	for day in range(0,days_to_plot):
@@ -83,6 +92,9 @@ def days_since_vs_missingness(pred, y_train, subset_df_p, days_to_plot = 14):
 	sns.despine()
 
 def backfill_data(days, agg_pred_data, clf):
+	'''
+	This functions uses the fitted model (clf) to nowcast the data file (agg_pred_data) from last day of data for 'days' number of days 
+	'''
 	nowcasted_data = agg_pred_data.copy()
 	for date in nowcasted_data.index[-days:]:
 
@@ -104,6 +116,9 @@ def backfill_data(days, agg_pred_data, clf):
 	return nowcasted_data
 
 def plot_explained_bar(score, txt):
+	'''
+	This functions makes a bar for showing explained variance of the model.
+	'''
 	plt.figure(figsize=(5,0.2), dpi=150)
 	plt.yticks([])
 	plt.text(x = score-0.01, y= 0.75, s = f'{score:.2f}', fontsize=5, horizontalalignment='left')
@@ -115,6 +130,9 @@ def plot_explained_bar(score, txt):
 	sns.despine(bottom=True, left=True)
 
 def plot_sample_corrected_day(date, main_df, clf, thresh):
+	'''
+	Routine to plot figure 5 in the paper.
+	'''
 	subset_df = main_df.loc[:,date:date]
 	subset_df_p = generate_fit_data(subset_df)
 	subset_df_p = subset_df_p.rename(columns={0: 'infections'})
@@ -143,6 +161,9 @@ def plot_sample_corrected_day(date, main_df, clf, thresh):
 	sns.despine()
 
 def load_nowcast_data(path):
+	'''
+	Loads the data file that is to be nowcast.
+	'''
 	pred_data = pd.read_csv(path)[:-1]
 	pred_data['Onset Date'] = pd.to_datetime(pred_data['Onset Date'], format="%m/%d/%Y")
 	pred_data = pred_data.sort_values(by = ['Onset Date'])
@@ -155,6 +176,9 @@ def load_nowcast_data(path):
 	return agg_pred_data
 
 def plot_backfilled_actual( agg_pred_data, nowcasted_data, days):
+	'''
+	Function to visualize the backfilled/nowcast data against the actual data.
+	'''
 	fig = plt.figure(figsize=(6,2), dpi = 150)
 	plt.plot(agg_pred_data.index[-(days+10):], agg_pred_data['daily_confirm'][-(days+10):], marker='.', color="indianred", markersize=6, lw=1, label="Actual", alpha=0.85)
 	plt.plot(nowcasted_data.index[-(days+10):], nowcasted_data['daily_confirm'][-(days+10):], marker='.', color="teal", markersize=6, lw=1, ls='dashed', label="Nowcasted", alpha=0.85)
@@ -168,6 +192,9 @@ def plot_backfilled_actual( agg_pred_data, nowcasted_data, days):
 	plt.legend(prop={'size': 8}, loc = 'lower center')
 
 def load_extract_data(main_df, start, end):
+	'''
+	Function to load data from specified start and end dates.
+	'''
 	main_df['collection_date'] = pd.to_datetime(main_df['collection_date'])
 	main_df.set_index('collection_date', inplace=True)
 	main_df.columns = pd.to_datetime(main_df.columns)
@@ -175,6 +202,9 @@ def load_extract_data(main_df, start, end):
 	return subset_df
 
 def cut_stable_data(subset_df, thresh=0.1):
+	'''
+	Function to remove stable data based on a threshold value.
+	'''
 	subset_arr = subset_df.values
 	np.seterr(divide='ignore')
 	max_arr = np.nanmax(subset_arr, axis=0)
@@ -185,6 +215,9 @@ def cut_stable_data(subset_df, thresh=0.1):
 	return subset_df_p
 
 def generate_fit_data(subset_df_p):
+	'''
+	Function to generate all the covariates for the random forest model.
+	'''
 	subset_df_p = subset_df_p.stack().reset_index()
 	subset_df_p["day_since_first"]=subset_df_p['collection_date']-subset_df_p['level_1']
 	subset_df_p["day_since_first"] = subset_df_p["day_since_first"].dt.days
@@ -195,7 +228,9 @@ def generate_fit_data(subset_df_p):
 	return subset_df_p
 
 def fit_random_forest(subset_df, thresh):
-
+	'''
+	Function to fit the random forest model.
+	'''
 	subset_df_p = cut_stable_data(subset_df, thresh)
 	subset_df_p = generate_fit_data(subset_df_p)
 	infection_data = generate_fit_data(subset_df)
@@ -210,6 +245,9 @@ def fit_random_forest(subset_df, thresh):
 	return reg
 
 def make_prediction(reg, main_df, start, end, thresh):
+	'''
+	Use the fitted random forest model to make predictions.
+	'''
 	subset_df = main_df.loc[:,start:end]
 	
 	subset_df_p = cut_stable_data(subset_df, thresh)
@@ -224,3 +262,9 @@ def make_prediction(reg, main_df, start, end, thresh):
 	y_train = final[0]
 	pred = reg.predict(X_train)
 	return r2_score(y_train, reg.predict(X_train)), y_train, pred, subset_df_p
+
+def datetime_str(date):
+	'''
+	Convert datetime to string format
+	'''
+	return f'{date.value.year}-{date.value.month:02d}-{date.value.day:02d}'
