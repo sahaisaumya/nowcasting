@@ -1,4 +1,6 @@
-# A Machine Learning Model for Nowcasting Epidemic Incidence
+# A Machine Learning Model for Nowcasting Epidemic Incidence [![DOI](https://zenodo.org/badge/346708110.svg)](https://zenodo.org/badge/latestdoi/346708110)
+
+
 
 This interactive notebook reproduces the results of the paper titled 'A Machine Learning Model for Nowcasting Epidemic Incidence'. It can also work with any under-reported data and nowcast that, if data is processed in the appropriate input format.
 
